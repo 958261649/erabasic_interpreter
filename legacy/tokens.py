@@ -1,3 +1,5 @@
+# 这个文件定义了erabasic各种行对应的类型
+# 目前看来还缺了不少类型
 from parsers import *
 from context import *
 from typing import *

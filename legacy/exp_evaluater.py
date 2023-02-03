@@ -1,3 +1,4 @@
+# 这是一个用ply制作的计算器
 from ply import lex
 import ply.yacc as yacc
 

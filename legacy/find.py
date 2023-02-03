@@ -25,7 +25,7 @@ elses = [
 class FindError(Exception):
     pass
 
-
+#查找调用的函数在哪一行，但实际上erabasic的函数是可能在别的文件里的
 def find_func(re, code, pos=0, reverse=False):
     for i in range(len(code))[pos::(-2*reverse+1)]:
         if regex.match(re, get_line(code, i)):
@@ -33,7 +33,7 @@ def find_func(re, code, pos=0, reverse=False):
 
     raise FindError('Cannot find that function')
 
-
+# 这个应该是模仿basic语言在遇到 GOTO 等语句时全文查找标签在哪一行的操作
 def find(re, code, pos, reverse=False):
     """
     this function will give you the searched position + 1 (past that instruction)
