@@ -28,7 +28,7 @@ class Line:
 class BlankLine(Line):
     re = r'^[ \t\n]*$'
 
-
+# 形如 x = y 的行
 class EquLine(Line):
     re = r'^[^=]+[ \t]*=[ \t]*[^=\n\t ]+'
 
@@ -47,7 +47,7 @@ class EquLine(Line):
 
         return super().eval(context, pos, code)
 
-
+# 形如 x++ 或 x-- 的行
 class IncreaseLine(Line):
     re = r'[A-Za-z]* ?(\+\+|--)'
 
@@ -83,7 +83,7 @@ class InstLine(Line):
     def eval(self, context: Context, pos, code):
         return super().eval(context, pos, code)
 
-
+# 形如 PRINT xxx 的行
 class PrintLine(InstLine): # todo
     re = r'[ \t]*PRINT .+'
 
@@ -95,11 +95,11 @@ class PrintLine(InstLine): # todo
 
         return super().eval(context, pos, code)
 
-
+# ENDIF 行
 class EndifLine(InstLine):
     re = r'[ \t]*ENDIF'
 
-
+# ELSE 行
 class ElseLine(InstLine):
     re = r'[ \t]*ELSE'
 
@@ -117,7 +117,7 @@ class ElseIfLine(ElseLine):
     def get_condition(self, context):
         return exp_eval(self.arg, context)
 
-
+# IF 行
 class IfLine(InstLine):
     re = r'[ \t]*IF .+'
 
@@ -146,7 +146,7 @@ class IfLine(InstLine):
 
         return pos
 
-
+# SIF 行
 class SifLine(InstLine):
     re = r'[ \t]*SIF'
 
@@ -161,7 +161,7 @@ class SifLine(InstLine):
 
         return pos
 
-
+# 形如 CALL xxx 的行
 class CallLine(InstLine):
     re = r'[ \t]*CALL'
 
@@ -188,7 +188,7 @@ class CallLine(InstLine):
 
         return new_pos
 
-
+# RETURN 行
 class ReturnLine(InstLine):
     re = r'[ \t]*RETURN'
 
@@ -198,7 +198,7 @@ class ReturnLine(InstLine):
         context.pop_stack(return_var)
         return new_pos
 
-
+# RESTART 行
 class RestartLine(InstLine):
     re = r'[ \t]*RESTART'
 
@@ -206,7 +206,7 @@ class RestartLine(InstLine):
         new_pos = find_func(FuncLine.re, code, pos, True)
         return new_pos
 
-
+# GOTO 行
 class GotoLine(InstLine):
     re = r'GOTO'
     flag = 'GOTO'
@@ -216,7 +216,7 @@ class GotoLine(InstLine):
         context.flags[self.flag] = True
         return new_pos
 
-
+# FOR 行
 class ForLine(InstLine):
     re = r'FOR'
     start_name = 'FOR_START'
@@ -259,7 +259,7 @@ class ForLine(InstLine):
 
         return pos + 1
 
-
+# NEXT 行，FOR 行的结束标记
 class NextLine(InstLine):
     re = r'NEXT'
     matching_line = ForLine
@@ -302,7 +302,7 @@ class NextLine(InstLine):
         else:
             return pos + 1
 
-
+# REPEAT 行
 class RepeatLine(ForLine):
     re = r'REPEAT'
 
@@ -314,7 +314,7 @@ class RepeatLine(ForLine):
     def eval(self, context: Context, pos, code):
         return super().eval(context, pos, code)
 
-
+# REND 行，REPEAT行的结束标记
 class RendLine(NextLine):  # todo: remove code duplication
     re = r'REND'
     matching_line = RepeatLine
@@ -352,7 +352,7 @@ class RendLine(NextLine):  # todo: remove code duplication
         else:
             return pos + 1
 
-
+# WHILE 行
 class WhileLine(InstLine):
     re = r'WHILE'
 
@@ -362,14 +362,14 @@ class WhileLine(InstLine):
         else:
             return find(WendLine.re, code, pos)
 
-
+# WEND 行，WHILE行的结束标记
 class WendLine(InstLine):
     re = r'WEND'
 
     def eval(self, context: Context, pos, code):
         return find(WhileLine.re, code, pos, True) - 1
 
-
+# 循环开始和结束的指令集合
 # all matching instruction class should be in same index
 loop_start = [
     RepeatLine,
@@ -383,14 +383,14 @@ loop_end = [
     WendLine
 ]
 
-
+# CONTINUE 行
 class ContinueLine(InstLine):
     re = r'CONTINUE'
 
     def eval(self, context: Context, pos, code):
         return find_func(f'({"|".join([i.re for i in loop_end])})', code, pos) - 1  # must execute REPEAT instruction
 
-
+# BREAK 行
 class BreakLine(InstLine):
     re = r'BREAK'
 
@@ -399,7 +399,7 @@ class BreakLine(InstLine):
 
         return maximum
 
-
+# 形如 @xxxx() 的行，用于定义函数
 class FuncLine(Line):
     re = r'^@'
 
@@ -416,7 +416,7 @@ class FuncLine(Line):
         context.push_stack(-1)
         return pos + 1
 
-
+# 形如 %xxx: 的标签行，用于GOTO语句跳转
 class LabelLine(Line):
     re = r'\$'
 
